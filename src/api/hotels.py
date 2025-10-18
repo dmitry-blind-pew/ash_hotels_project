@@ -1,5 +1,5 @@
 from fastapi import Query, APIRouter
-from src.schemas.hotel import Hotel, HotelPatch
+from schemas.hotels import Hotel, HotelPatch
 from src.api.dependencies import PaginationDep
 import math
 
