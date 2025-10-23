@@ -1,45 +1,36 @@
 from fastapi import Query, APIRouter
+from models.hotels import HotelsORM
 from schemas.hotels import Hotel, HotelPatch
 from src.api.dependencies import PaginationDep
-import math
+from src.database import async_session_maker
+from sqlalchemy import insert, select
 
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
-hotels = [
-    {"id": 0, "title": "Vilnus", "status": "open"},
-    {"id": 1, "title": "Barselona", "status": "close"},
-    {"id": 2, "title": "Munich", "status": "open"},
-    {"id": 3, "title": "Valensia", "status": "open"},
-    {"id": 4, "title": "Minsk", "status": "close"},
-    {"id": 5, "title": "Milan", "status": "open"},
-    {"id": 6, "title": "Roma", "status": "open"},
-    {"id": 7, "title": "Berlin", "status": "close"},
-    {"id": 8, "title": "Warshava", "status": "open"},
-]
-
-
 @router.get("", summary="Информация об отелях")
-def get_hotels(
+async def get_hotels(
     pagination: PaginationDep,
-    id: int | None = Query(None, description="ID"), 
-    title: str | None = Query(None, description="Название отеля")
+    title: str | None = Query(None, description="Название отеля"),
+    location: str | None = Query(None, description="Адрес отеля")
 ):
-    if id is not None and title is not None:
-        result = [hotel for hotel in hotels if hotel["id"] == id and hotel["title"] == title]
-    if id is not None:
-        result = [hotel for hotel in hotels if hotel["id"] == id]
-    if title is not None:
-        result = [hotel for hotel in hotels if hotel["title"] == title]
-    else:
-        result = hotels
-    
-    if len(result) > pagination.per_page and pagination.page <= math.ceil(len(result) / pagination.per_page):
-        if pagination.page * pagination.per_page > len(result):
-            return result[(pagination.page - 1) * pagination.per_page :]
-        return result[(pagination.page - 1) * pagination.per_page : pagination.page * pagination.per_page]
-    return []
+    per_page = pagination.per_page or 5
+    async with async_session_maker() as session:
+        query = select(HotelsORM)
+        if location is not None:
+            query = query.filter(HotelsORM.location.ilike(f"%{location}%"))
+        if title is not None:
+            query = query.filter(HotelsORM.title.ilike(f"%{title}%"))
+        query = (
+            query
+            .limit(per_page)
+            .offset(per_page * (pagination.page - 1))
+        )
+        result = await session.execute(query)
+
+        hotels = result.scalars().all()
+        return hotels
 
 
 @router.delete("/{hotel_id}", summary="Удаление отеля")
@@ -50,9 +41,11 @@ def delete_hotel(hotel_id: int):
 
 
 @router.post("", summary="Добавление новых отелей")
-def create_hotel(hotel_data: Hotel):
-    global hotels
-    hotels.append({"id": hotels[-1]["id"] + 1, "title": hotel_data.title, "status": hotel_data.status})
+async def create_hotel(hotel_data: Hotel):
+    async with async_session_maker() as session:
+        add_hotel_statement = insert(HotelsORM).values(**hotel_data.model_dump())
+        await session.execute(add_hotel_statement)
+        await session.commit()
     return {"status": "Hotel created"}
 
 
