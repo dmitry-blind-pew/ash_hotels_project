@@ -1,9 +1,8 @@
 from fastapi import Query, APIRouter
-from models.hotels import HotelsORM
+from src.repositories.hotels import HotelsRepository
 from schemas.hotels import Hotel, HotelPatch
 from src.api.dependencies import PaginationDep
 from src.database import async_session_maker
-from sqlalchemy import insert, select
 
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -17,21 +16,11 @@ async def get_hotels(
 ):
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
-        query = select(HotelsORM)
-        if location is not None:
-            query = query.filter(HotelsORM.location.ilike(f"%{location}%"))
-        if title is not None:
-            query = query.filter(HotelsORM.title.ilike(f"%{title}%"))
-        query = (
-            query
-            .limit(per_page)
-            .offset(per_page * (pagination.page - 1))
-        )
-        result = await session.execute(query)
-
-        hotels = result.scalars().all()
-        return hotels
-
+        return await HotelsRepository(session).get_all(title=title, 
+                                                       location=location, 
+                                                       limit=per_page, 
+                                                       offset=per_page * (pagination.page - 1))
+        
 
 @router.delete("/{hotel_id}", summary="Удаление отеля")
 def delete_hotel(hotel_id: int):
@@ -43,10 +32,9 @@ def delete_hotel(hotel_id: int):
 @router.post("", summary="Добавление новых отелей")
 async def create_hotel(hotel_data: Hotel):
     async with async_session_maker() as session:
-        add_hotel_statement = insert(HotelsORM).values(**hotel_data.model_dump())
-        await session.execute(add_hotel_statement)
+        hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
-    return {"status": "Hotel created"}
+    return {"status": f"Hotel '{hotel}' created"}
 
 
 @router.put(
