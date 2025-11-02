@@ -1,6 +1,6 @@
 from fastapi import Query, APIRouter
 from src.repositories.hotels import HotelsRepository
-from src.schemas.hotels import Hotel, HotelPatch
+from src.schemas.hotels import HotelSchemaAddData, HotelPatch
 from src.api.dependencies import PaginationDep
 from src.database import async_session_maker
 
@@ -37,7 +37,7 @@ async def delete_hotel(hotel_id: int):
 
 
 @router.post("", summary="Добавление новых отелей")
-async def create_hotel(hotel_data: Hotel):
+async def create_hotel(hotel_data: HotelSchemaAddData):
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
@@ -48,7 +48,7 @@ async def create_hotel(hotel_data: Hotel):
     "/{hotel_id}",
     summary="Обновление всех данных отеля",
     description="Необходимо вносить абсолютно все параметры для изменения")
-async def put_hotel(hotel_id: int, hotel_data: Hotel):
+async def put_hotel(hotel_id: int, hotel_data: HotelSchemaAddData):
     async with async_session_maker() as session:
         await HotelsRepository(session).edit(id=hotel_id, update_data=hotel_data)
         await session.commit()

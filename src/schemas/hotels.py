@@ -1,9 +1,13 @@
 from pydantic import BaseModel, Field
 
 
-class Hotel(BaseModel):
+class HotelSchemaAddData(BaseModel):
     title: str
     location: str
+
+
+class HotelSchema(HotelSchemaAddData):
+    id: int
 
 
 class HotelPatch(BaseModel):
