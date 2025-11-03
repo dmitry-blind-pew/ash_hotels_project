@@ -15,8 +15,6 @@ async def register_user(user_data: UserAddDataSchema):
     hashed_password = pwd_context.hash(user_data.password)
     hashed_user_data = UserAddDataSchema(email=user_data.email, password=hashed_password)
     async with async_session_maker() as session:
-        result = await UsersRepository(session).add_user(hashed_user_data)
+        await UsersRepository(session).add(hashed_user_data)
         await session.commit()
-    if result is None:
-        return {"status": "Email already exists"}
     return {"status": "User Registered"}
