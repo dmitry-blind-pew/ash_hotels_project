@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class UserAddDataSchema(BaseModel):
@@ -14,3 +14,9 @@ class UserHashedSchema(BaseModel):
 class UserSchema(BaseModel):
     id: int
     email: EmailStr
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserLoginHashedSchema(UserSchema):
+    hashed_password: str
