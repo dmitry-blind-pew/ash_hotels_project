@@ -39,7 +39,7 @@ async def get_me(user_id: UserIdDep):
         return user
 
 
-@router.get("/logout", summary="Выход из системы")
+@router.post("/logout", summary="Выход из системы")
 async def logout_user(response: Response):
     response.delete_cookie("access_token")
     return {"status": "User Logged Out"}
