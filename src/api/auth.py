@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Response, Request
+from fastapi import APIRouter, HTTPException, Response
+from src.api.dependencies import UserIdDep
 from src.database import async_session_maker
 from src.repositories.users import UsersRepository
 from src.schemas.auth import UserAddDataSchema, UserHashedSchema
@@ -31,7 +32,14 @@ async def register_user(user_data: UserAddDataSchema):
     return {"status": "User Registered"}
 
 
-@router.get("/only_auth", summary="Получение токена")
-async def only_auth(request: Request):
-    access_token = request.cookies["access_token"]
-    return access_token
+@router.get("/me", summary="Узнать кто аутентифицирован сейчас")
+async def get_me(user_id: UserIdDep):
+    async with async_session_maker() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+        return user
+
+
+@router.get("/logout", summary="Выход из системы")
+async def logout_user(response: Response):
+    response.delete_cookie("access_token")
+    return {"status": "User Logged Out"}
