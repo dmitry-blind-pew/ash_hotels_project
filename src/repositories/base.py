@@ -1,5 +1,6 @@
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
+from src.database import engine
 
 
 class BaseRepository:
@@ -37,4 +38,5 @@ class BaseRepository:
         update_data_statement = (update(self.model)
                                  .filter_by(**filter_by)
                                  .values(update_data.model_dump(exclude_unset=exclude_unset)))
+        print(update_data_statement.compile(engine, compile_kwargs={"literal_binds": True}))
         return await self.session.execute(update_data_statement)
