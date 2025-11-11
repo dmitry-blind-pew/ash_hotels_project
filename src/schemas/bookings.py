@@ -17,6 +17,6 @@ class BookingSchemaAdd(BaseModel):
     date_to: date
 
 
-class BookingSchemaAddDataBase(BookingSchemaAdd):
+class BookingSchemaAddRequest(BookingSchemaAdd):
     user_id: int
     price: int
