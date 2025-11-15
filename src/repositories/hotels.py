@@ -29,14 +29,10 @@ class HotelsRepository(BaseRepository):
             .filter(RoomsORM.id.in_(rooms_ids_to_get))
         )
 
-        filters = [HotelsORM.id.in_(hotels_ids_to_get)]
+        filters = [self.model.id.in_(hotels_ids_to_get)]
         if location is not None:
-            filters.append(HotelsORM.location.ilike(f"%{location}%"))
+            filters.append(self.model.location.ilike(f"%{location}%"))
         if title is not None:
-            filters.append(HotelsORM.title.ilike(f"%{title}%"))
+            filters.append(self.model.title.ilike(f"%{title}%"))
 
-        return await self.get_filtered(
-            *filters,
-            limit=limit,
-            offset=offset,
-        )
+        return await self.get_filtered(*filters, limit=limit, offset=offset)

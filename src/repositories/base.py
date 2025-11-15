@@ -14,8 +14,8 @@ class BaseRepository:
     async def get_filtered(
             self,
             *filter,
-            limit: int,
-            offset: int,
+            limit: int | None = None,
+            offset: int = 0,
             **filter_by
     ):
         query = (
