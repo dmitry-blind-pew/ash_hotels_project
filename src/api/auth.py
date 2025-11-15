@@ -8,6 +8,12 @@ from src.services.auth import AuthService
 router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
 
 
+@router.get("/me", summary="Узнать кто аутентифицирован сейчас")
+async def get_me(user_id: UserIdDep, db: DBDep):
+    user = await db.users.get_one_or_none(id=user_id)
+    return user
+
+
 @router.post("/login", summary="Аутентификация клиента")
 async def login_user(user_data: UserAddDataSchema, response: Response, db: DBDep):
     user = await db.users.get_user_with_hashed_password(email=user_data.email)
@@ -27,12 +33,6 @@ async def register_user(user_data: UserAddDataSchema, db: DBDep):
     await db.users.add(hashed_user_data)
     await db.commit()
     return {"status": "User Registered"}
-
-
-@router.get("/me", summary="Узнать кто аутентифицирован сейчас")
-async def get_me(user_id: UserIdDep, db: DBDep):
-    user = await db.users.get_one_or_none(id=user_id)
-    return user
 
 
 @router.post("/logout", summary="Выход из системы")

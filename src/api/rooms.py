@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from datetime import date
 
 from src.api.dependencies import DBDep
 from src.schemas.rooms import RoomSchemaAddData, RoomPatch, RoomSchemaRequestData, RoomPatchRequest
@@ -8,8 +9,12 @@ router = APIRouter(prefix="/hotels", tags=["Номера"])
 
 
 @router.get("/{hotel_id}/rooms", summary="Информация о номерах отеля")
-async def get_rooms(hotel_id: int, db: DBDep):
-    return await db.rooms.get_filtered(hotel_id=hotel_id)
+async def get_rooms(
+        hotel_id: int,
+        db: DBDep,
+        date_from: date = Query(example="2025-11-11"),
+        date_to: date = Query(example="2025-11-12")):
+    return await db.rooms.get_rooms_filter_by_date(hotel_id=hotel_id, date_from=date_from, date_to=date_to)
 
 
 @router.get("/{hotel_id}/rooms/{room_id}", summary="Поиск номера по ID")
@@ -23,13 +28,6 @@ async def create_room(hotel_id: int, room_data: RoomSchemaRequestData, db: DBDep
     room = await db.rooms.add(room_data_and_id)
     await db.commit()
     return {"status": "Room created", "data": room}
-
-
-@router.delete("/{hotel_id}/rooms/{room_id}", summary="Удаление номера отеля")
-async def delete_room(hotel_id: int, room_id: int, db: DBDep):
-    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
-    await db.commit()
-    return {"status": "Room deleted"}
 
 
 @router.put(
@@ -53,3 +51,10 @@ async def patch_room(hotel_id: int, room_id: int, room_data: RoomPatchRequest, d
                                         exclude_unset=True)
     await db.commit()
     return {"status": "Room updated"}
+
+
+@router.delete("/{hotel_id}/rooms/{room_id}", summary="Удаление номера отеля")
+async def delete_room(hotel_id: int, room_id: int, db: DBDep):
+    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
+    await db.commit()
+    return {"status": "Room deleted"}
