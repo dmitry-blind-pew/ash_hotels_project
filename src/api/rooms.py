@@ -40,40 +40,18 @@ async def create_room(hotel_id: int, room_data: RoomSchemaRequestData, db: DBDep
     description="Необходимо вносить абсолютно все параметры для изменения"
 )
 async def put_room(hotel_id: int, room_id: int, room_data: RoomSchemaRequestData, db: DBDep):
-    facilities_now = await db.rooms_facilities.get_all(rooms=room_id)
-    list_facilities_now = [f.facilities for f in facilities_now]
-    facilities_to_add = list(set(room_data.facilities_ids) - set(list_facilities_now))
-    facilities_to_delete = list(set(list_facilities_now) - set(room_data.facilities_ids))
-
     room_data_without_facilities = room_data.model_dump(exclude={'facilities_ids'})
     room_data_and_id = RoomSchemaAddData(hotel_id=hotel_id, **room_data_without_facilities)
     await db.rooms.edit(id=room_id, update_data=room_data_and_id)
 
-    rooms_facilities_add_data = [RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id) for facility_id in
-                             facilities_to_add]
-    await db.rooms_facilities.add_bulk(rooms_facilities_add_data)
-
-    for delete_facility in facilities_to_delete:
-        await db.rooms_facilities.delete(rooms=room_id, facilities=delete_facility)
-
+    await db.rooms_facilities.update_facilities(room_id=room_id, new_facilities_ids=room_data.facilities_ids)
     await db.commit()
     return {"status": "Room updated"}
 
 
 @router.patch("/{hotel_id}/rooms/{room_id}", summary="Обновление отдельных параметров номера")
 async def patch_room(hotel_id: int, room_id: int, room_data: RoomSchemaPatchRequest, db: DBDep):
-    if room_data.facilities_ids:
-        facilities_now = await db.rooms_facilities.get_all(rooms=room_id)
-        list_facilities_now = [f.facilities for f in facilities_now]
-        facilities_to_add = list(set(room_data.facilities_ids) - set(list_facilities_now))
-        facilities_to_delete = list(set(list_facilities_now) - set(room_data.facilities_ids))
-
-        rooms_facilities_add_data = [RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id) for facility_id in
-                                     facilities_to_add]
-        await db.rooms_facilities.add_bulk(rooms_facilities_add_data)
-
-        for delete_facility in facilities_to_delete:
-            await db.rooms_facilities.delete(rooms=room_id, facilities=delete_facility)
+    await db.rooms_facilities.update_facilities(room_id=room_id, new_facilities_ids=room_data.facilities_ids)
 
     room_data_dict = room_data.model_dump(exclude_unset=True, exclude={'facilities_ids'})
     room_data_and_id = RoomSchemaPatch(hotel_id=hotel_id, **room_data_dict)
