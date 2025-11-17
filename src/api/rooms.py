@@ -2,7 +2,8 @@ from fastapi import APIRouter, Query
 from datetime import date
 
 from src.api.dependencies import DBDep
-from src.schemas.rooms import RoomSchemaAddData, RoomPatch, RoomSchemaRequestData, RoomPatchRequest
+from src.schemas.facilities import RoomsFacilitiesAddSchema
+from src.schemas.rooms import RoomSchemaAddData, RoomSchemaPatch, RoomSchemaRequestData, RoomSchemaPatchRequest
 
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
@@ -26,6 +27,9 @@ async def get_room(hotel_id: int, room_id: int, db: DBDep):
 async def create_room(hotel_id: int, room_data: RoomSchemaRequestData, db: DBDep):
     room_data_and_id = RoomSchemaAddData(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(room_data_and_id)
+
+    rooms_facilities_data = [RoomsFacilitiesAddSchema(rooms=room.id, facilities=facility_id) for facility_id in room_data.facilities_ids]
+    await db.rooms_facilities.add_bulk(rooms_facilities_data)
     await db.commit()
     return {"status": "Room created", "data": room}
 
@@ -36,19 +40,49 @@ async def create_room(hotel_id: int, room_data: RoomSchemaRequestData, db: DBDep
     description="Необходимо вносить абсолютно все параметры для изменения"
 )
 async def put_room(hotel_id: int, room_id: int, room_data: RoomSchemaRequestData, db: DBDep):
-    room_data_and_id = RoomSchemaAddData(hotel_id=hotel_id, **room_data.model_dump())
+    facilities_now = await db.rooms_facilities.get_all(rooms=room_id)
+    list_facilities_now = [f.facilities for f in facilities_now]
+    facilities_to_add = list(set(room_data.facilities_ids) - set(list_facilities_now))
+    facilities_to_delete = list(set(list_facilities_now) - set(room_data.facilities_ids))
+
+    room_data_without_facilities = room_data.model_dump(exclude={'facilities_ids'})
+    room_data_and_id = RoomSchemaAddData(hotel_id=hotel_id, **room_data_without_facilities)
     await db.rooms.edit(id=room_id, update_data=room_data_and_id)
+
+    rooms_facilities_add_data = [RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id) for facility_id in
+                             facilities_to_add]
+    await db.rooms_facilities.add_bulk(rooms_facilities_add_data)
+
+    for delete_facility in facilities_to_delete:
+        await db.rooms_facilities.delete(rooms=room_id, facilities=delete_facility)
+
     await db.commit()
-    return {"status": "Hotel updated"}
+    return {"status": "Room updated"}
 
 
 @router.patch("/{hotel_id}/rooms/{room_id}", summary="Обновление отдельных параметров номера")
-async def patch_room(hotel_id: int, room_id: int, room_data: RoomPatchRequest, db: DBDep):
-    room_data_and_id = RoomPatch(hotel_id=hotel_id, **room_data.model_dump(exclude_unset=True))
-    await db.rooms.edit(id=room_id,
-                                        hotel_id=hotel_id,
-                                        update_data=room_data_and_id,
-                                        exclude_unset=True)
+async def patch_room(hotel_id: int, room_id: int, room_data: RoomSchemaPatchRequest, db: DBDep):
+    if room_data.facilities_ids:
+        facilities_now = await db.rooms_facilities.get_all(rooms=room_id)
+        list_facilities_now = [f.facilities for f in facilities_now]
+        facilities_to_add = list(set(room_data.facilities_ids) - set(list_facilities_now))
+        facilities_to_delete = list(set(list_facilities_now) - set(room_data.facilities_ids))
+
+        rooms_facilities_add_data = [RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id) for facility_id in
+                                     facilities_to_add]
+        await db.rooms_facilities.add_bulk(rooms_facilities_add_data)
+
+        for delete_facility in facilities_to_delete:
+            await db.rooms_facilities.delete(rooms=room_id, facilities=delete_facility)
+
+    room_data_dict = room_data.model_dump(exclude_unset=True, exclude={'facilities_ids'})
+    room_data_and_id = RoomSchemaPatch(hotel_id=hotel_id, **room_data_dict)
+    await db.rooms.edit(
+        id=room_id,
+        hotel_id=hotel_id,
+        update_data=room_data_and_id,
+        exclude_unset=True
+    )
     await db.commit()
     return {"status": "Room updated"}
 
@@ -58,3 +92,4 @@ async def delete_room(hotel_id: int, room_id: int, db: DBDep):
     await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     await db.commit()
     return {"status": "Room deleted"}
+

@@ -10,7 +10,7 @@ class FacilitiesORM(BaseORM):
     title: Mapped[str]
 
 
-class FacilitiesAndRoomsORM(BaseORM):
+class RoomsFacilitiesORM(BaseORM):
     __tablename__ = 'facilities_and_rooms'
 
     id: Mapped[int] = mapped_column(primary_key=True)
