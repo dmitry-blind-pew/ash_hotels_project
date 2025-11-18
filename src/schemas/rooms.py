@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from src.schemas.facilities import FacilitiesSchema
 
 
 class RoomSchemaRequestData(BaseModel):
@@ -19,6 +21,10 @@ class RoomSchemaAddData(BaseModel):
 
 class RoomSchema(RoomSchemaAddData):
     id: int
+
+
+class RoomSchemaWithRelationships(RoomSchema):
+    facilities: list[FacilitiesSchema]
 
 
 class RoomSchemaPatchRequest(BaseModel):
