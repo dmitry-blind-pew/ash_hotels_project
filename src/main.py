@@ -20,6 +20,7 @@ from src.api.facilities import router as router_facilities
 async def lifespan(app: FastAPI):
     await redis_connector.connect()
     FastAPICache.init(RedisBackend(redis_connector.redis), prefix="fastapi-cache")
+    await redis_connector.ping()
     yield
     await redis_connector.disconnect()
 
