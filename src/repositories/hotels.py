@@ -1,8 +1,9 @@
+from src.mappers.hotels import HotelsMapper
 from src.models.hotels import HotelsORM
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
 from src.repositories.utils import rooms_ids_for_booking
-from src.schemas.hotels import HotelSchema
+
 
 from sqlalchemy import select
 from datetime import date
@@ -10,7 +11,7 @@ from datetime import date
 
 class HotelsRepository(BaseRepository):
     model = HotelsORM
-    schema = HotelSchema
+    mapper = HotelsMapper
 
 
     async def get_filter_by_date(

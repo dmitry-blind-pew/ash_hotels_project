@@ -1,16 +1,17 @@
+from src.mappers.facilities import FacilitiesMapper, RoomsFacilitiesMapper
 from src.models.facilities import FacilitiesORM, RoomsFacilitiesORM
 from src.repositories.base import BaseRepository
-from src.schemas.facilities import FacilitiesSchema, RoomsFacilitiesSchema, RoomsFacilitiesAddSchema
+from src.schemas.facilities import RoomsFacilitiesAddSchema
 
 
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesORM
-    schema = FacilitiesSchema
+    mapper = FacilitiesMapper
 
 
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesORM
-    schema = RoomsFacilitiesSchema
+    mapper = RoomsFacilitiesMapper
 
     async def update_facilities(self, room_id: int, new_facilities_ids: list[int]):
         facilities_now = await self.get_all(rooms=room_id)
