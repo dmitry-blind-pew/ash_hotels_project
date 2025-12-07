@@ -1,4 +1,7 @@
 import json
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 import pytest
 from httpx import AsyncClient
@@ -59,3 +62,16 @@ async def create_user(async_client, setup_database):
             "password": "1234",
         }
     )
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def auth_async_client(create_user, async_client):
+    auth_user = await async_client.post(
+        "/auth/login",
+        json={
+            "email": "test@gmail.com",
+            "password": "1234",
+        }
+    )
+    assert "access_token" in auth_user.cookies
+    yield auth_user
