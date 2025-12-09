@@ -64,14 +64,14 @@ async def create_user(async_client, setup_database):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 async def auth_async_client(create_user, async_client):
-    auth_user = await async_client.post(
+    await async_client.post(
         "/auth/login",
         json={
             "email": "test@gmail.com",
             "password": "1234",
         }
     )
-    assert "access_token" in auth_user.cookies
-    yield auth_user
+    assert async_client.cookies["access_token"]
+    yield async_client

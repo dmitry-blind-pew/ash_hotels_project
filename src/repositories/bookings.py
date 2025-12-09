@@ -4,6 +4,7 @@ from datetime import date
 from src.mappers.bookings import BookingsMapper
 from src.models.bookings import BookingsORM
 from src.repositories.base import BaseRepository
+from src.repositories.utils import rooms_ids_for_booking
 
 
 class BookingsRepository(BaseRepository):
@@ -15,3 +16,18 @@ class BookingsRepository(BaseRepository):
         result = await self.session.execute(query)
         bookings = result.scalars().all()
         return [self.mapper.map_to_domain_entity(booking) for booking in bookings]
+
+
+    async def add_booking(self, data, hotel_id):
+        free_rooms_ids = rooms_ids_for_booking(
+            date_from=data.date_from,
+            date_to=data.date_to,
+            hotel_id=hotel_id
+        )
+        free_rooms_result = await self.session.execute(free_rooms_ids)
+        free_rooms = free_rooms_result.scalars().all()
+
+        if data.room_id not in free_rooms:
+            raise Exception
+        return await self.add(data)
+
