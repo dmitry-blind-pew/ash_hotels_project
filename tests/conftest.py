@@ -1,6 +1,8 @@
 import json
 from unittest import mock
 
+from src.api.dependencies import get_db
+
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 import pytest
@@ -20,10 +22,18 @@ async def check_test_mode():
     assert settings.MODE == "TEST"
 
 
-@pytest.fixture(scope="function", autouse=True)
-async def db_manager() -> DBManager:
+async def get_db_manager_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
+
+
+@pytest.fixture(scope="function")
+async def db_manager() -> DBManager:
+    async for db in get_db_manager_null_pool():
+        yield db
+
+
+app.dependency_overrides[get_db] = get_db_manager_null_pool
 
 
 @pytest.fixture(scope="session", autouse=True)
