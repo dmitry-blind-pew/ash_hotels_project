@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import json
 from unittest import mock
 
@@ -11,7 +12,7 @@ from httpx import AsyncClient
 from src.config import settings
 from src.database import BaseORM, engine, async_session_maker_null_pool
 from src.main import app
-from src.models import *
+from src.models import *  # noqa
 from src.schemas.hotels import HotelSchemaAddData
 from src.schemas.rooms import RoomSchemaAddData
 from src.utils.db_manager import DBManager
@@ -44,7 +45,7 @@ async def setup_database(check_test_mode):
 
     with (
         open("tests/test_data/mock_hotels.json", "r", encoding="utf-8") as hotels_file,
-        open("tests/test_data/mock_rooms.json", "r", encoding="utf-8") as rooms_file
+        open("tests/test_data/mock_rooms.json", "r", encoding="utf-8") as rooms_file,
     ):
         hotels_data = json.load(hotels_file)
         rooms_data = json.load(rooms_file)
@@ -70,7 +71,7 @@ async def create_user(async_client, setup_database):
         json={
             "email": "test@gmail.com",
             "password": "1234",
-        }
+        },
     )
 
 
@@ -81,7 +82,7 @@ async def auth_async_client(create_user, async_client):
         json={
             "email": "test@gmail.com",
             "password": "1234",
-        }
+        },
     )
     assert async_client.cookies["access_token"]
     yield async_client

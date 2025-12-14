@@ -25,8 +25,9 @@ async def create_booking(booking_data: BookingSchemaAdd, db: DBDep, user_id: Use
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
     price = room.price
-    booking_data_and_id = BookingSchemaAddRequest(user_id=user_id, price=price, **booking_data.model_dump())
+    booking_data_and_id = BookingSchemaAddRequest(
+        user_id=user_id, price=price, **booking_data.model_dump()
+    )
     booking = await db.bookings.add_booking(data=booking_data_and_id, hotel_id=hotel.id)
     await db.commit()
     return {"status": "Booking added", "data": booking}
-

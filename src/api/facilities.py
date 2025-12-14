@@ -20,4 +20,3 @@ async def create_facility(db: DBDep, facility_data: FacilitiesSchemaAddData):
     facility = await db.facilities.add(facility_data)
     await db.commit()
     return {"status": "Facility created", "facility": facility}
-

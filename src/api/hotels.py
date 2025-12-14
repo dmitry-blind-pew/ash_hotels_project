@@ -17,17 +17,17 @@ async def get_hotels(
     title: str | None = Query(None, description="Название отеля"),
     location: str | None = Query(None, description="Адрес отеля"),
     date_from: date = Query(example="2025-11-11"),
-    date_to: date = Query(example="2025-11-12")
+    date_to: date = Query(example="2025-11-12"),
 ):
     per_page = pagination.per_page or 5
-    return await (db.hotels.get_filter_by_date(
+    return await db.hotels.get_filter_by_date(
         date_from=date_from,
         date_to=date_to,
         title=title,
         location=location,
         limit=per_page,
-        offset=per_page * (pagination.page - 1)
-    ))
+        offset=per_page * (pagination.page - 1),
+    )
 
 
 @router.get("{hotel_id}", summary="Поиск отеля по ID")
@@ -46,7 +46,7 @@ async def create_hotel(hotel_data: HotelSchemaAddData, db: DBDep):
 @router.put(
     "/{hotel_id}",
     summary="Обновление всех данных отеля",
-    description="Необходимо вносить абсолютно все параметры для изменения"
+    description="Необходимо вносить абсолютно все параметры для изменения",
 )
 async def put_hotel(hotel_id: int, hotel_data: HotelSchemaAddData, db: DBDep):
     await db.hotels.edit(id=hotel_id, update_data=hotel_data)

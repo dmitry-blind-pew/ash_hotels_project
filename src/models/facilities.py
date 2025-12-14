@@ -1,22 +1,26 @@
+import typing
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from src.database import BaseORM
 
+if typing.TYPE_CHECKING:
+    from src.models import RoomsORM
+
 
 class FacilitiesORM(BaseORM):
-    __tablename__ = 'facilities'
+    __tablename__ = "facilities"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
 
     rooms: Mapped[list["RoomsORM"]] = relationship(
-        back_populates="facilities",
-        secondary="facilities_and_rooms"
+        back_populates="facilities", secondary="facilities_and_rooms"
     )
 
 
 class RoomsFacilitiesORM(BaseORM):
-    __tablename__ = 'facilities_and_rooms'
+    __tablename__ = "facilities_and_rooms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     facilities: Mapped[int] = mapped_column(ForeignKey("facilities.id"))

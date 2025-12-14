@@ -1,7 +1,7 @@
 """rooms migration
 
 Revision ID: 5ac8f32294d4
-Revises: 
+Revises:
 Create Date: 2025-10-20 20:51:31.110239
 
 """

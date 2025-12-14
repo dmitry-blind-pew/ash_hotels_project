@@ -16,4 +16,3 @@ class RoomsFacilitiesAddSchema(BaseModel):
 
 class RoomsFacilitiesSchema(RoomsFacilitiesAddSchema):
     id: int
-

@@ -6,6 +6,7 @@ from src.database import BaseORM
 ModelType = TypeVar("ModelType", bound=BaseORM)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
+
 class DataMapper(Generic[ModelType, SchemaType]):
     model_ORM: Type[ModelType]
     schema: Type[SchemaType]

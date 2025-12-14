@@ -19,8 +19,10 @@ class RoomsFacilitiesRepository(BaseRepository):
         facilities_to_add = list(set(new_facilities_ids) - set(list_facilities_now))
         facilities_to_delete = list(set(list_facilities_now) - set(new_facilities_ids))
 
-        rooms_facilities_add_data = [RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id) for facility_id in
-                                     facilities_to_add]
+        rooms_facilities_add_data = [
+            RoomsFacilitiesAddSchema(rooms=room_id, facilities=facility_id)
+            for facility_id in facilities_to_add
+        ]
         await self.add_bulk(rooms_facilities_add_data)
 
         for delete_facility in facilities_to_delete:

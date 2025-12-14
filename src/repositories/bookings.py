@@ -18,12 +18,9 @@ class BookingsRepository(BaseRepository):
         bookings = result.scalars().all()
         return [self.mapper.map_to_domain_entity(booking) for booking in bookings]
 
-
     async def add_booking(self, data, hotel_id):
         free_rooms_ids = rooms_ids_for_booking(
-            date_from=data.date_from,
-            date_to=data.date_to,
-            hotel_id=hotel_id
+            date_from=data.date_from, date_to=data.date_to, hotel_id=hotel_id
         )
         free_rooms_result = await self.session.execute(free_rooms_ids)
         free_rooms = free_rooms_result.scalars().all()
@@ -31,4 +28,3 @@ class BookingsRepository(BaseRepository):
         if data.room_id not in free_rooms:
             raise HTTPException(500)
         return await self.add(data)
-
