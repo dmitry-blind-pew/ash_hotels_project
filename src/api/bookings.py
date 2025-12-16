@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_cache.decorator import cache
 
+from src.exeptions import ObjectNotFoundException, AllRoomsAreBookedException
 from src.schemas.bookings import BookingSchemaAdd, BookingSchemaAddRequest
 from src.api.dependencies import DBDep, UserIdDep
 
@@ -22,12 +23,16 @@ async def get_bookings_me(db: DBDep, user_id: UserIdDep):
 
 @router.post("", summary="Создание бронирования")
 async def create_booking(booking_data: BookingSchemaAdd, db: DBDep, user_id: UserIdDep):
-    room = await db.rooms.get_one_or_none(id=booking_data.room_id)
-    hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
+    try:
+        room = await db.rooms.get_one(id=booking_data.room_id)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=400, detail="Номер не найден")
+    hotel = await db.hotels.get_one(id=room.hotel_id)
     price = room.price
-    booking_data_and_id = BookingSchemaAddRequest(
-        user_id=user_id, price=price, **booking_data.model_dump()
-    )
-    booking = await db.bookings.add_booking(data=booking_data_and_id, hotel_id=hotel.id)
+    booking_data_and_id = BookingSchemaAddRequest(user_id=user_id, price=price, **booking_data.model_dump())
+    try:
+        booking = await db.bookings.add_booking(data=booking_data_and_id, hotel_id=hotel.id)
+    except AllRoomsAreBookedException as ex:
+        raise HTTPException(status_code=409, detail=ex.detail)
     await db.commit()
     return {"status": "Booking added", "data": booking}

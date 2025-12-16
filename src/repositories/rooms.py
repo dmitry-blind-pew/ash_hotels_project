@@ -1,3 +1,6 @@
+from sqlalchemy.exc import NoResultFound
+
+from src.exeptions import ObjectNotFoundException
 from src.mappers.rooms import RoomsMapper, RoomsMapperWithRelationships
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
@@ -26,12 +29,11 @@ class RoomsRepository(BaseRepository):
         model_orm = result.unique().scalars().all()
         return [RoomsMapperWithRelationships.map_to_domain_entity(model) for model in model_orm]
 
-    async def get_one_or_none(self, **filter_by):
-        query = (
-            select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by)
-        )
+    async def get_one(self, **filter_by):
+        query = select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by)
         result = await self.session.execute(query)
-        model_orm = result.unique().scalars().one_or_none()
-        if model_orm is None:
-            return None
+        try:
+            model_orm = result.unique().scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
         return RoomsMapperWithRelationships.map_to_domain_entity(model_orm)

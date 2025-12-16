@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from src.api.dependencies import UserIdDep, DBDep
+from src.exeptions import UserExistsException
 from src.schemas.auth import UserAddDataSchema, UserHashedSchema
 from src.services.auth import AuthService
 
@@ -32,7 +33,10 @@ async def login_user(user_data: UserAddDataSchema, response: Response, db: DBDep
 async def register_user(user_data: UserAddDataSchema, db: DBDep):
     hashed_password = AuthService().hash_password(user_data.password)
     hashed_user_data = UserHashedSchema(email=user_data.email, hashed_password=hashed_password)
-    await db.users.add(hashed_user_data)
+    try:
+        await db.users.add(hashed_user_data)
+    except UserExistsException as ex:
+        raise HTTPException(status_code=409, detail=ex.detail)
     await db.commit()
     return {"status": "User Registered"}
 
