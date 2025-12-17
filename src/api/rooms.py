@@ -11,7 +11,7 @@ from src.schemas.rooms import (
     RoomSchemaRequestData,
     RoomSchemaPatchRequest,
 )
-
+from src.utils import check_date_from_and_date_to
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
@@ -24,8 +24,7 @@ async def get_rooms(
     date_from: date = Query(example="2025-11-11"),
     date_to: date = Query(example="2025-11-12"),
 ):
-    if date_from > date_to:
-        raise HTTPException(status_code=409, detail="Дата выезда позже даты заезда")
+    check_date_from_and_date_to(date_from, date_to)
     return await db.rooms.get_rooms_filter_by_date(hotel_id=hotel_id, date_from=date_from, date_to=date_to)
 
 
@@ -35,7 +34,7 @@ async def get_room(hotel_id: int, room_id: int, db: DBDep):
     try:
         return await db.rooms.get_one(id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=400, detail="Номера не существует")
+        raise HTTPException(status_code=404, detail="Номера не существует")
 
 
 @router.post("/{hotel_id}/rooms", summary="Добавление номеров отеля")

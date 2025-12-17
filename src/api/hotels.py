@@ -5,7 +5,7 @@ from fastapi_cache.decorator import cache
 from src.exeptions import ObjectNotFoundException
 from src.schemas.hotels import HotelSchemaAddData, HotelPatch
 from src.api.dependencies import PaginationDep, DBDep
-
+from src.utils import check_date_from_and_date_to
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -20,8 +20,7 @@ async def get_hotels(
     date_from: date = Query(example="2025-11-11"),
     date_to: date = Query(example="2025-11-12"),
 ):
-    if date_from > date_to:
-        raise HTTPException(status_code=409, detail="Дата выезда позже даты заезда")
+    check_date_from_and_date_to(date_from, date_to)
     per_page = pagination.per_page or 5
     return await db.hotels.get_filter_by_date(
         date_from=date_from,

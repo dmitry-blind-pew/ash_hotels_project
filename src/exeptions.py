@@ -9,6 +9,10 @@ class ObjectNotFoundException(ProjectException):
     detail = "Объект не найден"
 
 
+class ObjectAlreadyExistsException(ProjectException):
+    detail = "Объект уже существует"
+
+
 class AllRoomsAreBookedException(ProjectException):
     detail = "Все номера забронированы"
 
