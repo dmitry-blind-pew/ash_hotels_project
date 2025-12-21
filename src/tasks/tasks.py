@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 import asyncio
 
@@ -13,10 +14,10 @@ def test_task():
 
 
 async def send_email_for_today_checkin_helper():
-    print("поиск начался")
+    logging.info("поиск начался")
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         bookings_for_send = await db.bookings.get_bookings_with_today_checkin()
-        print(f"{bookings_for_send}")
+        logging.info(f"{bookings_for_send}")
 
 
 @celery_app.task(name="email_for_today_checkin")

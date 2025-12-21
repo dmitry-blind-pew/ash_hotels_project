@@ -30,7 +30,7 @@ async def get_db_manager_null_pool():
 
 
 @pytest.fixture(scope="function")
-async def db_manager() -> AsyncGenerator[DBManager]:
+async def db_manager() -> AsyncGenerator[DBManager, None]:
     async for db in get_db_manager_null_pool():
         yield db
 
@@ -60,7 +60,7 @@ async def setup_database(check_test_mode):
 
 
 @pytest.fixture(scope="session")
-async def async_client() -> AsyncGenerator[AsyncClient]:
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as aclient:
         yield aclient
 

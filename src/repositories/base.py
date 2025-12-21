@@ -1,3 +1,5 @@
+import logging
+
 from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
@@ -15,9 +17,7 @@ class BaseRepository:
         self.session = session
 
     async def get_filtered(self, *filter, limit: int | None = None, offset: int = 0, **filter_by):
-        query = (
-            select(self.model).filter(*filter).filter_by(**filter_by).limit(limit).offset(offset)
-        )
+        query = select(self.model).filter(*filter).filter_by(**filter_by).limit(limit).offset(offset)
         result = await self.session.execute(query)
         model_orm = result.scalars().all()
         return [self.mapper.map_to_domain_entity(model) for model in model_orm]
@@ -47,9 +47,12 @@ class BaseRepository:
         try:
             result = await self.session.execute(add_data_statement)
         except IntegrityError as ex:
+            logging.exception(f"Не удалось добавить данные в БД, входные данные {data}")
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
-            else: raise ex
+            else:
+                logging.exception(f"Необработанная ошибка, входные данные {data}")
+                raise ex
         model_orm = result.scalars().one()
         return self.mapper.map_to_domain_entity(model_orm)
 
@@ -66,9 +69,7 @@ class BaseRepository:
             raise ObjectNotFoundException
 
         update_data_statement = (
-            update(self.model)
-            .filter_by(**filter_by)
-            .values(update_data.model_dump(exclude_unset=exclude_unset))
+            update(self.model).filter_by(**filter_by).values(update_data.model_dump(exclude_unset=exclude_unset))
         )
         return await self.session.execute(update_data_statement)
 

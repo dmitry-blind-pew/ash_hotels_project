@@ -1,12 +1,18 @@
+# ruff: noqa: E402
+
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 from pathlib import Path
-import uvicorn
+import logging
 import sys
+
+from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+import uvicorn
 
 sys.path.append(str(Path(__file__).parent.parent))
+
+logging.basicConfig(level=logging.INFO)
 
 from src.init import redis_connector
 from src.api.auth import router as router_auth
@@ -20,6 +26,7 @@ from src.api.facilities import router as router_facilities
 async def lifespan(app: FastAPI):
     await redis_connector.connect()
     FastAPICache.init(RedisBackend(redis_connector.redis), prefix="fastapi-cache")
+    logging.info("FastAPI cache initialized")
     await redis_connector.ping()
     yield
     await redis_connector.disconnect()

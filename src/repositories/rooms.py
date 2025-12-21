@@ -16,14 +16,10 @@ class RoomsRepository(BaseRepository):
     mapper = RoomsMapper
 
     async def get_rooms_filter_by_date(self, date_from: date, date_to: date, hotel_id):
-        rooms_ids_to_get = rooms_ids_for_booking(
-            date_from=date_from, date_to=date_to, hotel_id=hotel_id
-        )
+        rooms_ids_to_get = rooms_ids_for_booking(date_from=date_from, date_to=date_to, hotel_id=hotel_id)
 
         query = (
-            select(self.model)
-            .options(selectinload(self.model.facilities))
-            .filter(RoomsORM.id.in_(rooms_ids_to_get))
+            select(self.model).options(selectinload(self.model.facilities)).filter(RoomsORM.id.in_(rooms_ids_to_get))
         )
         result = await self.session.execute(query)
         model_orm = result.unique().scalars().all()

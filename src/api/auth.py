@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 
 from src.api.dependencies import UserIdDep, DBDep
-from src.exeptions import ObjectAlreadyExistsException
-from src.schemas.auth import UserAddDataSchema, UserHashedSchema
+from src.exeptions import UserAlreadyExistsHTTPException, UserAlreadyExistsException, \
+    EmailNotRegisteredException, EmailNotRegisteredHTTPException, IncorrectPasswordException, \
+    IncorrectPasswordHTTPException
+from src.schemas.auth import UserAddDataSchema
 from src.services.auth import AuthService
 
 
@@ -11,33 +13,28 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация и авт
 
 @router.get("/me", summary="Узнать кто аутентифицирован сейчас")
 async def get_me(user_id: UserIdDep, db: DBDep):
-    user = await db.users.get_one_or_none(id=user_id)
+    user = await AuthService(db).get_me(user_id=user_id)
     return user
 
 
 @router.post("/login", summary="Аутентификация клиента")
 async def login_user(user_data: UserAddDataSchema, response: Response, db: DBDep):
-    user = await db.users.get_user_with_hashed_password(email=user_data.email)
-    if user is None:
-        raise HTTPException(
-            status_code=401, detail="Пользователь с таким email не зарегестрирован."
-        )
-    if not AuthService().verify_password(user_data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Неверный пароль.")
-    access_token = AuthService().create_access_token({"user_id": user.id})
+    try:
+        access_token = await AuthService(db).login_user(user_data)
+    except EmailNotRegisteredException as exc:
+        raise EmailNotRegisteredHTTPException from exc
+    except IncorrectPasswordException as exc:
+        raise IncorrectPasswordHTTPException from exc
     response.set_cookie("access_token", access_token)
     return {"access_token": access_token}
 
 
 @router.post("/register", summary="Регистрация клиента")
 async def register_user(user_data: UserAddDataSchema, db: DBDep):
-    hashed_password = AuthService().hash_password(user_data.password)
-    hashed_user_data = UserHashedSchema(email=user_data.email, hashed_password=hashed_password)
     try:
-        await db.users.add(hashed_user_data)
-    except ObjectAlreadyExistsException:
-        raise HTTPException(status_code=409, detail="Такой пользователь уже существует")
-    await db.commit()
+        await AuthService(db).register_user(user_data)
+    except UserAlreadyExistsException:
+        raise UserAlreadyExistsHTTPException
     return {"status": "User Registered"}
 
 

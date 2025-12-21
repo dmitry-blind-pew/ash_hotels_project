@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from sqlalchemy import select
 from datetime import date
 
@@ -20,9 +19,7 @@ class BookingsRepository(BaseRepository):
         return [self.mapper.map_to_domain_entity(booking) for booking in bookings]
 
     async def add_booking(self, data, hotel_id):
-        free_rooms_ids = rooms_ids_for_booking(
-            date_from=data.date_from, date_to=data.date_to, hotel_id=hotel_id
-        )
+        free_rooms_ids = rooms_ids_for_booking(date_from=data.date_from, date_to=data.date_to, hotel_id=hotel_id)
         free_rooms_result = await self.session.execute(free_rooms_ids)
         free_rooms = free_rooms_result.scalars().all()
 
