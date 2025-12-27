@@ -1,4 +1,3 @@
-from src.api.dependencies import UserIdDep
 from src.config import settings
 from passlib.context import CryptContext
 from datetime import datetime, timezone, timedelta
@@ -32,7 +31,7 @@ class AuthService(BaseService):
         except jwt.exceptions.DecodeError:
             raise IncorrectTokenException
 
-    async def get_me(self, user_id: UserIdDep):
+    async def get_me(self, user_id: int):
         user = await self.db.users.get_one_or_none(id=user_id)
         return user
 
