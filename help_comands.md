@@ -18,7 +18,7 @@ docker run --name booking_cache_container `
 docker run --name booking_nginx_container `
     --volume ./nginx.conf:/etc/nginx/nginx.conf `
     --network=myNetwork `
-    --rm -p 80:80 nginx
+    -d -p 80:80 nginx
 
 
 docker build -t booking_image .
