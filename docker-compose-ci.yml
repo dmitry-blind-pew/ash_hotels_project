@@ -1,0 +1,27 @@
+services:
+  booking_back_service:
+    container_name: "booking_back_container"
+    image: booking_image:latest
+    networks:
+      - myNetwork
+
+
+  booking_celery_worker_service:
+    container_name: "booking_celery_worker_container"
+    image: booking_image:latest
+    networks:
+      - myNetwork
+    command: "celery --app=src.tasks.celery_application:celery_app worker -l INFO"
+
+
+  booking_celery_beat_service:
+    container_name: "booking_celery_beat_container"
+    image: booking_image:latest
+    networks:
+      - myNetwork
+    command: "celery --app=src.tasks.celery_application:celery_app beat -l INFO"
+
+
+networks:
+  myNetwork:
+    external: true
