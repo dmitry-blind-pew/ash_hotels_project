@@ -8,7 +8,6 @@ class FacilitiesService(BaseService):
         test_task.delay()
         return await self.db.facilities.get_all()
 
-
     async def create_facility(self, facility_data: FacilitiesSchemaAddData):
         facility = await self.db.facilities.add(facility_data)
         await self.db.commit()

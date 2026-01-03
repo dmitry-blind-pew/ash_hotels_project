@@ -22,7 +22,7 @@ Lint-job:
 Format-job:
   stage: format
   script:
-    - docker run --rm --network myNetwork booking_image ruff format
+    - docker run --rm --network myNetwork booking_image ruff format --check
 
 Migrations-job:
   stage: migrations
