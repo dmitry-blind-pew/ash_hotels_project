@@ -11,7 +11,7 @@ from tests.conftest import get_db_manager_null_pool
         (1, "2025-12-05", "2025-12-06", 200),
         (1, "2025-12-05", "2025-12-06", 200),
         (1, "2025-12-05", "2025-12-06", 200),
-        (1, "2025-12-05", "2025-12-06", 409),
+        (1, "2025-12-05", "2025-12-06", 404),
         (1, "2025-12-08", "2025-12-09", 200),
     ],
 )
@@ -31,7 +31,7 @@ async def test_create_booking(auth_async_client, room_id, date_from, date_to, st
 @pytest.fixture(scope="module")
 async def delete_all_bookings():
     async for dbnp in get_db_manager_null_pool():
-        await dbnp.bookings.delete()
+        await dbnp.bookings.delete_all()
         await dbnp.commit()
 
 

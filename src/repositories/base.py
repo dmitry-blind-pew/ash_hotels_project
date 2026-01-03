@@ -80,3 +80,7 @@ class BaseRepository:
         except NoResultFound:
             raise ObjectNotFoundException
         return await self.session.execute(delete_data_statement)
+
+    async def delete_all(self):
+        delete_stmt = delete(self.model)
+        await self.session.execute(delete_stmt)
