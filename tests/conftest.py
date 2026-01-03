@@ -11,7 +11,7 @@ import pytest
 from httpx import AsyncClient
 
 from src.config import settings
-from src.database import BaseORM, engine, async_session_maker_null_pool
+from src.database import BaseORM, engine_null_pool, async_session_maker_null_pool
 from src.main import app
 from src.models import *  # noqa
 from src.schemas.hotels import HotelSchemaAddData
@@ -40,7 +40,7 @@ app.dependency_overrides[get_db] = get_db_manager_null_pool
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
-    async with engine.begin() as conn:
+    async with engine_null_pool.begin() as conn:
         await conn.run_sync(BaseORM.metadata.drop_all)
         await conn.run_sync(BaseORM.metadata.create_all)
 
