@@ -1,5 +1,5 @@
 
-docker network create myNetwork
+
 
 docker run --name booking_db_container `
     -p 6432:5432 `
