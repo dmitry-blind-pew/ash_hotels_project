@@ -1,6 +1,4 @@
 
-
-
 docker run --name booking_db_container `
     -p 6432:5432 `
     -e  POSTGRES_USER=postgres `
