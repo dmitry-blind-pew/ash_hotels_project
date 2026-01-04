@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 import sys
 
-from fastapi import FastAPI
+from fastapi import FastAPI # Импорт Фастапи
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 import uvicorn # Библиотека выполняющая функцию ASGI сервера
@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     await redis_connector.disconnect()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan) # Создание экземпляра класса Фастапи
 
 
 app.include_router(router_auth)
