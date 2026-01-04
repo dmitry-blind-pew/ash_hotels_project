@@ -8,7 +8,7 @@ import sys
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-import uvicorn
+import uvicorn # Библиотека выполняющая функцию ASGI сервера
 
 sys.path.append(str(Path(__file__).parent.parent))
 
