@@ -7,12 +7,12 @@ from src.utils.exeptions import check_date_from_and_date_to
 
 class HotelsService(BaseService):
     async def get_hotels(
-            self,
-            pagination,
-            title: str | None,
-            location: str | None,
-            date_from: date,
-            date_to: date,
+        self,
+        pagination,
+        title: str | None,
+        location: str | None,
+        date_from: date,
+        date_to: date,
     ):
         check_date_from_and_date_to(date_from, date_to)
         per_page = pagination.per_page or 5
@@ -22,7 +22,7 @@ class HotelsService(BaseService):
             title=title,
             location=location,
             limit=per_page,
-            offset=per_page * (pagination.page - 1)
+            offset=per_page * (pagination.page - 1),
         )
 
     async def get_hotel(self, hotel_id: int):

@@ -8,10 +8,8 @@ class BookingService(BaseService):
     async def get_all_bookings(self):
         return await self.db.bookings.get_all()
 
-
     async def get_bookings_me(self, user_id: UserIdDep):
         return await self.db.bookings.get_filtered(user_id=user_id)
-
 
     async def create_booking(self, booking_data: BookingSchemaAdd, user_id: UserIdDep):
         try:

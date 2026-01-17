@@ -3,8 +3,13 @@ from passlib.context import CryptContext
 from datetime import datetime, timezone, timedelta
 import jwt
 
-from src.exeptions import ObjectAlreadyExistsException, UserAlreadyExistsException, IncorrectTokenException, \
-    EmailNotRegisteredException, IncorrectPasswordException
+from src.exeptions import (
+    ObjectAlreadyExistsException,
+    UserAlreadyExistsException,
+    IncorrectTokenException,
+    EmailNotRegisteredException,
+    IncorrectPasswordException,
+)
 from src.schemas.auth import UserAddDataSchema, UserHashedSchema
 from src.services.base import BaseService
 
