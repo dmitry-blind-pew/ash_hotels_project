@@ -36,7 +36,7 @@ def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None =
     rooms_ids_to_get = (
         select(free_rooms.c.room_id)
         .select_from(free_rooms)
-        .filter(free_rooms.c.left_rooms > 0, free_rooms.c.room_id.in_(rooms_ids_for_hotel))
+        .filter(free_rooms.c.left_rooms > 0, free_rooms.c.room_id.in_(select(rooms_ids_for_hotel)))
     )
 
     return rooms_ids_to_get

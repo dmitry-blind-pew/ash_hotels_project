@@ -53,7 +53,7 @@ async def setup_database(check_test_mode):
     hotels_schemas = [HotelSchemaAddData.model_validate(hotel) for hotel in hotels_data]
     rooms_schemas = [RoomSchemaAddData.model_validate(room) for room in rooms_data]
 
-    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+    async for db in get_db_manager_null_pool():
         await db.hotels.add_bulk(hotels_schemas)
         await db.rooms.add_bulk(rooms_schemas)
         await db.commit()
