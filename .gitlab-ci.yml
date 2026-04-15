@@ -6,37 +6,46 @@ stages:
   - tests
   - deploy
 
+default:
+  tags:
+    - deploy
+
 build-job:
   stage: build
   before_script:
-    - cp ${ENV} .env
-    - cp ${TEST_ENV} .env-test
-    - docker network create myNetwork || true
+    - echo "$ENV" > .env
+    - echo "$TEST_ENV" > .env-test
   script:
     - docker build -t booking_image .
 
 Lint-job:
   stage: lint
   script:
-    - docker run --rm --network myNetwork booking_image ruff check
+    - docker run --rm booking_image ruff check
 
 Format-job:
   stage: format
   script:
-    - docker run --rm --network myNetwork booking_image ruff format --check
+    - docker run --rm booking_image ruff format --check
 
 Migrations-job:
   stage: migrations
   script:
-    - docker run --rm --network myNetwork booking_image alembic upgrade head
+    - docker run --rm --network booking_project_myNetwork booking_image alembic upgrade head
 
 Tests-job:
   stage: tests
   script:
-    - docker run --rm --network myNetwork booking_image pytest -s -v
+    - docker run --rm --network booking_project_myNetwork booking_image pytest -s -v
 
 deploy-job:
   stage: deploy
   script:
-    - docker compose -f docker-compose-ci.yml up -d
+    - cd /root/booking_project
+    - git fetch origin main
+    - git reset --hard origin/main
+    - echo "$ENV" > .env
+    - docker compose up -d --build
     - docker exec booking_nginx_container nginx -s reload
+  only:
+    - main
