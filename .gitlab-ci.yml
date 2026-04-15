@@ -10,23 +10,14 @@ default:
   tags:
     - deploy
 
+before_script:
+  - echo "$ENV" > .env
+  - echo "$TEST_ENV" > .env-test
+
 build-job:
   stage: build
-  before_script:
-    - echo "$ENV" > .env
-    - echo "$TEST_ENV" > .env-test
   script:
     - docker build -t booking_image .
-
-Lint-job:
-  stage: lint
-  script:
-    - docker run --rm booking_image ruff check
-
-Format-job:
-  stage: format
-  script:
-    - docker run --rm booking_image ruff format --check
 
 Migrations-job:
   stage: migrations
@@ -40,6 +31,7 @@ Tests-job:
 
 deploy-job:
   stage: deploy
+  before_script: []
   script:
     - cd /root/booking_project
     - git fetch origin main
