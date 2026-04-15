@@ -36,6 +36,7 @@ Tests-job:
   stage: tests
   before_script:
     - echo "$TEST_ENV" > .env-test
+    - docker exec booking_db_container psql -U postgres -c "CREATE DATABASE test;" || true
   script:
     - docker run --rm --network booking_project_myNetwork --env-file .env-test booking_image python -m pytest -s -v
 
