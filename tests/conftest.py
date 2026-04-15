@@ -8,7 +8,7 @@ from src.api.dependencies import get_db
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from src.config import settings
 from src.database import BaseORM, engine_null_pool, async_session_maker_null_pool
@@ -61,9 +61,9 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope="session")
 async def async_client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url="http://test") as aclient:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as aclient:
         yield aclient
-
 
 @pytest.fixture(scope="session", autouse=True)
 async def create_user(async_client, setup_database):
@@ -75,7 +75,6 @@ async def create_user(async_client, setup_database):
         },
     )
 
-
 @pytest.fixture(scope="session")
 async def auth_async_client(create_user, async_client):
     await async_client.post(
@@ -85,5 +84,5 @@ async def auth_async_client(create_user, async_client):
             "password": "1234",
         },
     )
-    assert async_client.cookies["access_token"]
+    assert async_client.cookies.get("access_token")
     yield async_client
