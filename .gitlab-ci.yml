@@ -38,7 +38,7 @@ Migrations-job:
   script:
     - echo "$ENV" > .env
     - export $(grep -v '^#' .env | xargs)
-    - docker run --rm --network booking_project_myNetwork --env-file .env booking_image alembic upgrade head
+    - docker run --rm --network myNetwork --env-file .env booking_image alembic upgrade head
 
 Tests-job:
   stage: tests
@@ -46,7 +46,7 @@ Tests-job:
     - deploy
   script:
     - echo "$TEST_ENV" > .env-test
-    - docker run --rm --network booking_project_myNetwork --env-file .env-test booking_image python -m pytest -s -v
+    - docker run --rm --network myNetwork --env-file .env-test booking_image python -m pytest -s -v
 
 deploy-job:
   stage: deploy
