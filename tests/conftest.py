@@ -65,6 +65,7 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=transport, base_url="http://test") as aclient:
         yield aclient
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def create_user(async_client, setup_database):
     await async_client.post(
@@ -74,6 +75,7 @@ async def create_user(async_client, setup_database):
             "password": "1234",
         },
     )
+
 
 @pytest.fixture(scope="session")
 async def auth_async_client(create_user, async_client):
