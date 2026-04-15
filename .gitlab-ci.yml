@@ -21,12 +21,12 @@ build-job:
 Lint-job:
   stage: lint
   script:
-    - docker run --rm booking_image python -m ruff check
+    - docker run --rm booking_image ruff check
 
 Format-job:
   stage: format
   script:
-    - docker run --rm booking_image python -m ruff format --check
+    - docker run --rm booking_image ruff format --check
 
 Migrations-job:
   stage: migrations
@@ -36,7 +36,7 @@ Migrations-job:
 Tests-job:
   stage: tests
   script:
-    - docker run --rm --network booking_project_myNetwork booking_image python -m pytest -s -v
+    - docker run --rm --network booking_project_myNetwork booking_image pytest -s -v
 
 deploy-job:
   stage: deploy
