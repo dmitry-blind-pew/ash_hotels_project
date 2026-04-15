@@ -31,12 +31,12 @@ Format-job:
 Migrations-job:
   stage: migrations
   script:
-    - docker run --rm --network booking_project_myNetwork booking_image alembic upgrade head
+    - docker run --rm --network booking_project_myNetwork --env-file .env booking_image alembic upgrade head
 
 Tests-job:
   stage: tests
   script:
-    - docker run --rm --network booking_project_myNetwork booking_image pytest -s -v
+    - docker run --rm --network booking_project_myNetwork --env-file .env-test booking_image python -m pytest -s -v
 
 deploy-job:
   stage: deploy
