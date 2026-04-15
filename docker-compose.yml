@@ -37,9 +37,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Твой конфиг
-      - /etc/letsencrypt:/etc/letsencrypt:ro   # Сертификаты (когда появятся)
-      - ./certbot_temp:/var/www/certbot:ro     # Для проверки Certbot
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot_temp:/var/www/certbot:ro
     networks:
       - myNetwork
     depends_on:
