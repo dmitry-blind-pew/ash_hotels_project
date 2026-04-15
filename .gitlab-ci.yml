@@ -6,32 +6,52 @@ stages:
   - tests
   - deploy
 
-default:
-  tags:
-    - deploy
-
-before_script:
-  - echo "$ENV" > .env
-  - echo "$TEST_ENV" > .env-test
-
 build-job:
   stage: build
+  tags:
+    - deploy
+  before_script:
+    - echo "$ENV" > .env
+    - echo "$TEST_ENV" > .env-test
+    - docker network create myNetwork || true
   script:
     - docker build -t booking_image .
 
+Lint-job:
+  stage: lint
+  tags:
+    - deploy
+  script:
+    - docker run --rm --network myNetwork booking_image python -m ruff check
+
+Format-job:
+  stage: format
+  tags:
+    - deploy
+  script:
+    - docker run --rm --network myNetwork booking_image python -m ruff format --check
+
 Migrations-job:
   stage: migrations
+  tags:
+    - deploy
   script:
+    - echo "$ENV" > .env
+    - export $(grep -v '^#' .env | xargs)
     - docker run --rm --network booking_project_myNetwork --env-file .env booking_image alembic upgrade head
 
 Tests-job:
   stage: tests
+  tags:
+    - deploy
   script:
+    - echo "$TEST_ENV" > .env-test
     - docker run --rm --network booking_project_myNetwork --env-file .env-test booking_image python -m pytest -s -v
 
 deploy-job:
   stage: deploy
-  before_script: []
+  tags:
+    - deploy
   script:
     - cd /root/booking_project
     - git fetch origin main
@@ -41,4 +61,5 @@ deploy-job:
     - docker exec booking_nginx_container nginx -s reload
   only:
     - main
+
 
